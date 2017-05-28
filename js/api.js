@@ -4,28 +4,24 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
+
 const SECRET_KEY = 'THIS IS MY SECRET';
+const getToken = user => jwt.sign(user, SECRET_KEY, { expiresIn: 60 * 60 * 8 }); // Eight hour token
+const verifyToken = (token, callback) => jwt.verify(token, SECRET_KEY, callback);
+const success = { success: true };
+const fail = message => ({ success: false, message });
 
-let getToken = user => jwt.sign(user, SECRET_KEY, { expiresIn: 60 * 60 }); // One hour token
-let verifyToken = (token, callback) => jwt.verify(token, SECRET_KEY, callback);
-
-let success = { success: true };
-let fail = message => ({ success: false, message });
-
-let credentials = {
-    username: 'admin',
-    password: 'admin'
-};
 
 module.exports.HiveApi = class {
-    constructor(repository) {
+    constructor(repository, adminCredentials) {
         // Config the server
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(bodyParser.json());
 
-        app.get('/authenticate', (req, res) => {
+        app.post('/authenticate', (req, res) => {
             let { username, password } = req.body;
-            if (username == credentials.username, password = credentials.password) {
+            if (username == adminCredentials.username &&
+                password == adminCredentials.password) {
                 res.send({ success: true, token: getToken(req.body) });
             } else {
                 res.send(fail(`Incorrect authentication`));

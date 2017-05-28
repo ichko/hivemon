@@ -1,18 +1,32 @@
-function selectDb(address, dbName) {
+var mongoClient = require('mongodb').MongoClient;
 
-}
 
-module.exports.HiveRepository = class {
+module.exports.DeviceManager = class {
     constructor(db) {
         this.db = {
             sensors: {},
             devices: {}
         };
+        this.mongo = {};
     }
 
     init(address = 'mongodb://localhost:27017', dbName = 'hive') {
-        selectDb(address, dbName);
-        return this;
+        return new Promise((resolve, reject) => {
+            mongoClient.connect(`${address}/${dbName}`, (error, db) => {
+                if (!error){
+                    Promise.all([
+                        db.createCollection('sensors'),
+                        db.createCollection('devices')
+                    ]).then(([sensors, devices]) => {
+                        this.mongo.sensors = sensors;
+                        this.mongo.devices = devices;
+                        resolve(this);
+                    });
+                } else {
+                    reject(error);
+                }
+            });
+        });
     }
 
     setSensor(...sensors) {
@@ -29,25 +43,9 @@ module.exports.HiveRepository = class {
     }
 
     getAllSensors() {
+        //return this.mongo.sensors.find({});
         return this.db.sensors;
     }
-
-    // setSensorConfig(...configs) {
-    //     configs.forEach(({ name, sensorNames }) =>
-    //         this.db.sensorConfigs[name] = sensorNames);
-    //     return this;
-    // }
-
-    // getSensorConfig(name) {
-    //     if (!this.db.sensorConfigs[name]) {
-    //         throw new Error(`No sensor configuration with the name ${ name }`);
-    //     }
-    //     return this.db.sensorConfigs[name];
-    // }
-
-    // getAllConfigs() {
-    //     return this.db.sensorConfigs;
-    // }
 
     setDevice(sensorNames = 'all', ...devices) {
         if (sensorNames == 'all') {
