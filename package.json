@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-
-},
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ichko/hivemon.git"
@@ -18,7 +17,10 @@
   },
   "homepage": "https://github.com/ichko/hivemon#readme",
   "dependencies": {
-      "request": "latest",
-      "request-promise": "latest"
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "method-override": "^2.3.9",
+    "request": "latest",
+    "request-promise": "latest"
   }
 }
