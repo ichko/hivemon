@@ -12,6 +12,11 @@ let verifyToken = (token, callback) => jwt.verify(token, SECRET_KEY, callback);
 let success = { success: true };
 let fail = message => ({ success: false, message });
 
+let credentials = {
+    username: 'admin',
+    password: 'admin'
+};
+
 module.exports.HiveApi = class {
     constructor(repository) {
         // Config the server
@@ -19,14 +24,19 @@ module.exports.HiveApi = class {
         app.use(bodyParser.json());
 
         app.get('/authenticate', (req, res) => {
-            res.send({ success: true, token: getToken(req.body) });
+            let { username, password } = req.body;
+            if (username == credentials.username, password = credentials.password) {
+                res.send({ success: true, token: getToken(req.body) });
+            } else {
+                res.send(fail(`Incorrect authentication`));
+            }
         });
 
         router.use((req, res, next) => {
             let token = req.body.token || req.headers['token'];
             verifyToken(token, err => {
                 if (err) {
-                    res.status(500).send(fail(`Invalid token`));
+                    res.status(500).send(fail(`Unauthorized`));
                 } else {
                     next();
                 }
