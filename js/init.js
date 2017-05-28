@@ -6,6 +6,7 @@ let { HiveApi } = require('./api');
 let repository = new HiveRepository().init();
 let monitor = new HiveMonitor(repository, 5000, console.log);
 let api = new HiveApi(repository);
+let port = 3000;
 
 repository
     .setSensor(
@@ -23,7 +24,6 @@ repository
     .addSensorData('hive0', 'hiveTemperature', 10, new Date())
     .addSensorData('hive0', 'humidity', [1, 2, 3], new Date());
 
-let port = 3000;
 console.log(`Monitoring and api (port: ${ port }) initiated...`);
 monitor.start();
 api.start(port);
