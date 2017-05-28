@@ -77,12 +77,21 @@ module.exports.HiveApi = class {
 
         // Sensors
         router.get('/sensor', (req, res) => {
-            res.send(repository.getAllSensors());
+            repository.getAllSensors()
+                .then(sensors => res.send(sensors))
+                .catch(error => res.send(fail(`Sensors could not be retrieved (${ error })`)));
         });
 
         router.post('/sensor', (req, res) => {
-            repository.setSensor(req.body);
-            res.send(success);
+            repository.setSensor(req.body)
+                .then(() => res.send(success))
+                .catch(error => res.send(fail(`Sensor could not be saved (${ error })`)));
+        });
+
+        router.delete('/sensor/:sensorName', (req, res) => {
+            repository.deleteSensor(req.params.sensorName)
+                .then(() => res.send(success))
+                .catch(error => res.send(fail(`Sensor could not be deleted (${ error })`)));
         });
     }
 

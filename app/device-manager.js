@@ -1,4 +1,4 @@
-var mongoClient = require('mongodb').MongoClient;
+let mongoose = require('mongoose');
 
 
 module.exports.DeviceManager = class {
@@ -7,44 +7,39 @@ module.exports.DeviceManager = class {
             sensors: {},
             devices: {}
         };
-        this.mongo = {};
+    }
+
+    registerSchemas() {
+        this.model = {
+            Sensor: mongoose.model('Sensor', new mongoose.Schema({
+                name: String,
+                displayName: String
+            }))
+        };
     }
 
     init(address = 'mongodb://localhost:27017', dbName = 'hive') {
         return new Promise((resolve, reject) => {
-            mongoClient.connect(`${address}/${dbName}`, (error, db) => {
-                if (!error){
-                    Promise.all([
-                        db.createCollection('sensors'),
-                        db.createCollection('devices')
-                    ]).then(([sensors, devices]) => {
-                        this.mongo.sensors = sensors;
-                        this.mongo.devices = devices;
-                        resolve(this);
-                    });
-                } else {
-                    reject(error);
-                }
-            });
+            mongoose.connect(`${address}/${dbName}`, error =>
+                error ? reject(error) : this.registerSchemas() || resolve(this));
         });
     }
 
     setSensor(...sensors) {
-        sensors.forEach(({ name = 'unnamed', displayName = 'unnamed' }) =>
-            this.db.sensors[name] = { displayName });
-        return this;
+        return Promise.all(sensors.map(({ name = 'unnamed', displayName = 'unnamed' }) =>
+            this.model.Sensor.findOneAndUpdate({ name }, { name, displayName }, { upsert: true })));
     }
 
     getSensor(name) {
-        if (!this.db.sensors[name]) {
-            throw new Error(`No sensor with the name ${ name }`);
-        }
-        return this.db.sensors[name];
+        return this.model.Sensor.find({ name });
+    }
+
+    deleteSensor(name) {
+        return this.model.Sensor.findOneAndRemove({ name });
     }
 
     getAllSensors() {
-        //return this.mongo.sensors.find({});
-        return this.db.sensors;
+        return this.model.Sensor.find({});
     }
 
     setDevice(sensorNames = 'all', ...devices) {
