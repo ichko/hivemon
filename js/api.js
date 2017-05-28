@@ -11,8 +11,8 @@ module.exports.HiveApi = class {
         app.use(bodyParser.json());
         app.use('/', router);
         app.use(function(err,req,res,next) {
-        console.log(err.stack);
-        res.status(500).send({ success: false, message: err.message });
+            console.log(err.stack);
+            res.status(500).send({ success: false, message: err.message });
         });
 
         let success = { success: true };

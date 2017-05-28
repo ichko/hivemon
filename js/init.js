@@ -21,7 +21,7 @@ repository
     )
     .addSensorData('hive0', 'light', 600, new Date())
     .addSensorData('hive0', 'hiveTemperature', 10, new Date())
-    .addSensorData('hive0', 'humidity', [1,2,3], new Date());
+    .addSensorData('hive0', 'humidity', [1, 2, 3], new Date());
 
 let port = 3000;
 console.log(`Monitoring and api (port: ${ port }) initiated...`);

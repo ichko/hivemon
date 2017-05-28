@@ -50,7 +50,6 @@ module.exports.HiveRepository = class {
     // }
 
     setDevice(sensorNames = 'all', ...devices) {
-        let sensors = {};
         if (sensorNames == 'all') {
             sensorNames = [];
             for (let name in this.getAllSensors()) {
@@ -58,13 +57,20 @@ module.exports.HiveRepository = class {
             }
         }
 
-        sensorNames.forEach(sensorName => {
-            let sensor = this.getSensor(sensorName);
-            sensors[sensorName] = [];
-        });
+        devices.forEach(({
+            name = 'unnamed',
+            url = '0.0.0.0',
+            location = 'no location',
+            displayName = 'unnamed'
+        }) => {
+            let sensors = {};
+            sensorNames.forEach(sensorName => {
+                let sensor = this.getSensor(sensorName);
+                sensors[sensorName] = [];
+            });
 
-        devices.forEach(({ name = 'unnamed', url = '0.0.0.0', location = 'no location', displayName = 'unnamed' }) =>
-            this.db.devices[name] = { url, location, sensors, displayName });
+            this.db.devices[name] = { url, location, sensors, displayName }
+        });
 
         return this;
     }
@@ -98,6 +104,4 @@ module.exports.HiveRepository = class {
     getAllDevices() {
         return this.db.devices;
     }
-
-
 }
