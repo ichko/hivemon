@@ -19,6 +19,7 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
+    "jsonwebtoken": "^7.4.1",
     "method-override": "^2.3.9",
     "request": "latest",
     "request-promise": "latest"

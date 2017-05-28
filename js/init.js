@@ -3,10 +3,12 @@ let { HiveMonitor } = require('./monitor');
 let { HiveApi } = require('./api');
 
 
-let repository = new HiveRepository().init();
-let monitor = new HiveMonitor(repository, 5000, console.log);
-let api = new HiveApi(repository);
 let port = 3000;
+let monitoringDelay = 5000;
+
+let repository = new HiveRepository().init();
+let monitor = new HiveMonitor(repository, monitoringDelay, console.log);
+let api = new HiveApi(repository);
 
 repository
     .setSensor(
@@ -21,6 +23,7 @@ repository
         { name: 'hive1', url: '0.0.0.1', location: 'Sofia', displayName: 'Hive 1' }
     )
     .addSensorData('hive0', 'light', 600, new Date())
+    .addSensorData('hive0', 'light', 10, new Date())
     .addSensorData('hive0', 'hiveTemperature', 10, new Date())
     .addSensorData('hive0', 'humidity', [1, 2, 3], new Date());
 

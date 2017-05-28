@@ -1,55 +1,80 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-let router = express.Router();
+const jwt = require('jsonwebtoken');
+const router = express.Router();
 
+const SECRET_KEY = 'THIS IS MY SECRET';
+
+let getToken = user => jwt.sign(user, SECRET_KEY, { expiresIn: 60 * 60 }); // One hour token
+let verifyToken = (token, callback) => jwt.verify(token, SECRET_KEY, callback);
+
+let success = { success: true };
+let fail = message => ({ success: false, message });
 
 module.exports.HiveApi = class {
     constructor(repository) {
         // Config the server
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(bodyParser.json());
-        app.use('/', router);
-        app.use(function(err,req,res,next) {
-            console.log(err.stack);
-            res.status(500).send({ success: false, message: err.message });
+
+        app.get('/authenticate', (req, res) => {
+            res.send({ success: true, token: getToken(req.body) });
         });
 
-        let success = { success: true };
+        router.use((req, res, next) => {
+            let token = req.body.token || req.headers['token'];
+            verifyToken(token, err => {
+                if (err) {
+                    res.status(500).send(fail(`Invalid token`));
+                } else {
+                    next();
+                }
+            });
+        });
+
+        app.use('/', router);
+        app.use((err, req, res, next) => {
+            res.status(500).send(fail(err.message));
+        });
 
         // Devices
-        router.get('/hive', function (req, res) {
+        router.get('/hive', (req, res) => {
             res.send(repository.getAllDevices());
         });
 
-        router.post('/hive', function (req, res) {
+        router.post('/hive', (req, res) => {
             repository.setDevice(req.body.sensorNames, req.body);
             res.send(success);
         });
 
-        router.get('/hive/:hiveName', function (req, res) {
+        router.get('/hive/:hiveName', (req, res) => {
             res.send(repository.getDevice(req.params.hiveName));
         });
 
-        router.get('/hive/:hiveName/sensors', function (req, res) {
+        router.get('/hive/:hiveName/sensors', (req, res) => {
             res.send(repository.getDevice(req.params.hiveName).sensors);
         });
 
-        router.get('/hive/:hiveName/sensors/:sensorName', function (req, res) {
+        router.get('/hive/:hiveName/sensors/:sensorName', (req, res) => {
             res.send(repository.getDevice(req.params.hiveName).sensors[req.params.sensorName]);
         });
 
-        router.post('/hive/:hiveName/sensors/:sensorName', function (req, res) {
+        router.post('/hive/:hiveName/sensors/:sensorName', (req, res) => {
+            res.send(repository.addSensorToDevice(req.params.hiveName, req.params.sensorNames));
+        });
+
+        router.get('/hive/:hiveName/toggleDoor', (req, res) => {
             res.send(repository.addSensorToDevice(req.params.hiveName, req.params.sensorNames));
         });
 
 
         // Sensors
-        router.get('/sensor', function (req, res) {
+        router.get('/sensor', (req, res) => {
             res.send(repository.getAllSensors());
         });
 
-        router.post('/sensor', function (req, res) {
+        router.post('/sensor', (req, res) => {
             repository.setSensor(req.body);
             res.send(success);
         });
