@@ -1,7 +1,7 @@
 const request = require('request-promise');
 
 
-module.exports = class HiveMonitor {
+module.exports.HiveMonitor = class {
     constructor(repository, frequency = 5000, logger = (_ = {})) {
         this.repository = repository;
         this.frequency = frequency;

@@ -1,10 +1,21 @@
-module.exports = class HiveRepository {
+
+
+
+function selectDb(port, dbName) {
+
+}
+
+module.exports.HiveRepository = class {
     constructor(db) {
         this.db = {
             sensors: {},
             sensorConfigs: {},
             devices: {}
         };
+    }
+
+    init() {
+
     }
 
     setSensor(...sensors) {
@@ -73,4 +84,6 @@ module.exports = class HiveRepository {
     getAllDevices() {
         return this.db.devices;
     }
+
+
 }

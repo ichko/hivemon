@@ -1,5 +1,5 @@
-let HiveRepository = require('./hive-repository');
-let HiveMonitor = require('./hive-monitor');
+let { HiveRepository } = require('./hive-repository');
+let { HiveMonitor } = require('./hive-monitor');
 
 
 let repository = new HiveRepository();
