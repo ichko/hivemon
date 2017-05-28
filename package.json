@@ -1,0 +1,24 @@
+{
+  "name": "hivemon",
+  "version": "1.0.0",
+  "description": "IOT Project for monitoring bee hives",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+
+},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ichko/hivemon.git"
+  },
+  "author": "Alex, Mario and Iliya",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ichko/hivemon/issues"
+  },
+  "homepage": "https://github.com/ichko/hivemon#readme",
+  "dependencies": {
+      "request": "latest",
+      "request-promise": "latest"
+  }
+}
