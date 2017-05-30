@@ -1,14 +1,17 @@
 let mongoose = require('mongoose');
 
 
+// Fixing mongoose deprecated Promises library
+mongoose.Promise = global.Promise;
+
 module.exports.DeviceManager = class {
     constructor(db) {
         this.db = {
             sensors: {},
             devices: {}
         };
-    }
-
+        this.sensorsProjection = { name: 1, displayName: 1, _id: 0 };
+    };
     registerSchemas() {
         this.model = {
             Sensor: mongoose.model('Sensor', new mongoose.Schema({
@@ -31,7 +34,7 @@ module.exports.DeviceManager = class {
     }
 
     getSensor(name) {
-        return this.model.Sensor.find({ name });
+        return this.model.Sensor.find({ name }, this.sensorsProjection);
     }
 
     deleteSensor(name) {
@@ -39,15 +42,17 @@ module.exports.DeviceManager = class {
     }
 
     getAllSensors() {
-        return this.model.Sensor.find({});
+        return this.model.Sensor.find({}, this.sensorsProjection);
     }
 
     setDevice(sensorNames = 'all', ...devices) {
         if (sensorNames == 'all') {
             sensorNames = [];
-            for (let name in this.getAllSensors()) {
-                sensorNames.push(name);
-            }
+            this.getAllSensors()
+                .then(({ name }) => sensorNames.push(name))
+                .catch(error => {
+                    throw new Error(`Sensors could not be retrieved (${ error })`)
+                });
         }
 
         devices.forEach(({
