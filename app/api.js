@@ -13,11 +13,11 @@ const fail = message => ({ success: false, message });
 
 
 module.exports.HiveApi = class {
-    constructor(repository, adminCredentials) {
+    constructor(manager, adminCredentials) {
         // Config the server
+        app.use('/public', express.static('public'));
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(bodyParser.json());
-
         app.post('/authenticate', (req, res) => {
             let { username, password } = req.body;
             if (username == adminCredentials.username &&
@@ -46,50 +46,73 @@ module.exports.HiveApi = class {
 
         // Devices
         router.get('/hive', (req, res) => {
-            res.send(repository.getAllDevices());
+            res.send(manager.getAllDevices());
         });
 
         router.post('/hive', (req, res) => {
-            repository.setDevice(req.body.sensorNames, req.body);
+            manager.setDevice(req.body.sensorNames, req.body);
             res.send(success);
         });
 
         router.get('/hive/:hiveName', (req, res) => {
-            res.send(repository.getDevice(req.params.hiveName));
+            res.send(manager.getDevice(req.params.hiveName));
         });
 
         router.get('/hive/:hiveName/sensors', (req, res) => {
-            res.send(repository.getDevice(req.params.hiveName).sensors);
+            res.send(manager.getDevice(req.params.hiveName).sensors);
         });
 
         router.get('/hive/:hiveName/sensors/:sensorName', (req, res) => {
-            res.send(repository.getDevice(req.params.hiveName).sensors[req.params.sensorName]);
+            res.send(manager.getDevice(req.params.hiveName).sensors[req.params.sensorName]);
+        });
+
+        router.get('/hive/:hiveName/sensors/:sensorName/last', (req, res) => {
+            let sensorData = manager.getDevice(req.params.hiveName).sensors[req.params.sensorName];
+            res.send(sensorData[sensorData.length - 1]);
+        });
+
+        router.get('/hive/:hiveName/sensors/:sensorName/:recordId', (req, res) => {
+            res.send(manager.getDevice(req.params.hiveName).sensors[req.params.sensorName][req.params.recordId]);
         });
 
         router.post('/hive/:hiveName/sensors/:sensorName', (req, res) => {
-            res.send(repository.addSensorToDevice(req.params.hiveName, req.params.sensorNames));
+            res.send(manager.addSensorToDevice(req.params.hiveName, req.params.sensorNames));
         });
 
-        router.get('/hive/:hiveName/toggleDoor', (req, res) => {
-            res.send(repository.addSensorToDevice(req.params.hiveName, req.params.sensorNames));
+        router.get('/hive/:hiveName/update', (req, res) => {
+            manager.updateDevice(req.params.hiveName)
+                .then(() => res.send(success))
+                .catch(error => res.send(fail(`Device update error (${ error })`)));
+        });
+
+        router.get('/hive/:hiveName/lock', (req, res) => {
+            manager.setDeviceLock(req.params.hiveName, true)
+                .then(() => res.send(success))
+                .catch(error => res.send(fail(`Lock error (${ error })`)));
+        });
+
+        router.get('/hive/:hiveName/unlock', (req, res) => {
+            manager.setDeviceLock(req.params.hiveName, false)
+                .then(() => res.send(success))
+                .catch(error => res.send(fail(`Unlock error (${ error })`)));
         });
 
 
         // Sensors
         router.get('/sensor', (req, res) => {
-            repository.getAllSensors()
+            manager.getAllSensors()
                 .then(sensors => res.send(sensors))
                 .catch(error => res.send(fail(`Sensors could not be retrieved (${ error })`)));
         });
 
         router.post('/sensor', (req, res) => {
-            repository.setSensor(req.body)
+            manager.setSensor(req.body)
                 .then(() => res.send(success))
                 .catch(error => res.send(fail(`Sensor could not be saved (${ error })`)));
         });
 
         router.delete('/sensor/:sensorName', (req, res) => {
-            repository.deleteSensor(req.params.sensorName)
+            manager.deleteSensor(req.params.sensorName)
                 .then(() => res.send(success))
                 .catch(error => res.send(fail(`Sensor could not be deleted (${ error })`)));
         });

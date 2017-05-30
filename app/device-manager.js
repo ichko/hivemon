@@ -1,13 +1,12 @@
-let mongoose = require('mongoose');
-
+const mongoose = require('mongoose');
+const request = require('request-promise');
 
 // Fixing mongoose deprecated Promises library
 mongoose.Promise = global.Promise;
 
 module.exports.DeviceManager = class {
-    constructor(db) {
+    constructor() {
         this.db = {
-            sensors: {},
             devices: {}
         };
         this.sensorsProjection = { name: 1, displayName: 1, _id: 0 };
@@ -53,19 +52,10 @@ module.exports.DeviceManager = class {
         return this.model.Sensor.find({}, this.sensorsProjection);
     }
 
-    setDevice(sensorNames = 'all', ...devices) {
-        if (sensorNames == 'all') {
-            sensorNames = [];
-            this.getAllSensors()
-                .then(({ name }) => sensorNames.push(name))
-                .catch(error => {
-                    throw new Error(`Sensors could not be retrieved (${ error })`)
-                });
-        }
-
+    setDevice(sensorNames, ...devices) {
         devices.forEach(({
             name = 'unnamed',
-            url = '0.0.0.0',
+            endpoints = { sensors: '0.0.0.0', lock: '0.0.0.0', unlock: '0.0.0.0' },
             location = 'no location',
             displayName = 'unnamed'
         }) => {
@@ -75,7 +65,7 @@ module.exports.DeviceManager = class {
                 sensors[sensorName] = [];
             });
 
-            this.db.devices[name] = { url, location, sensors, displayName }
+            this.db.devices[name] = { endpoints, location, sensors, displayName };
         });
 
         return this;
@@ -98,6 +88,19 @@ module.exports.DeviceManager = class {
         }
 
         return this;
+    }
+
+    updateDevice(deviceName) {
+        let { endpoints } = this.getDevice(deviceName);
+        return request.get(endpoints.update);
+    }
+
+    setDeviceLock(deviceName, value) {
+        let { endpoints } = this.getDevice(deviceName);
+        if (value) {
+            return request.get(endpoints.lock);
+        }
+        return request.get(endpoints.unlock);
     }
 
     getDevice(name) {

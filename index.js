@@ -3,7 +3,7 @@ let { HiveMonitor } = require('./app/monitor');
 let { HiveApi } = require('./app/api');
 
 
-let port = 3000;
+let port = 3001;
 let monitoringDelay = 5000;
 let apiCredentials = {
     username: 'admin',
@@ -15,24 +15,29 @@ let espCredentials = {
 };
 
 
-new DeviceManager().init('mongodb://localhost:27017/hive').then(repository => {
-    let api = new HiveApi(repository, apiCredentials);
+new DeviceManager().init('mongodb://localhost:27017/hive').then(manager => {
+    let api = new HiveApi(manager, apiCredentials);
     let monitor = new HiveMonitor({
         credentials: espCredentials,
-        repository,
+        manager,
         frequency: monitoringDelay,
         logger: console.log
     });
-    repository.setSensor(
+    manager.setSensor(
         { name: 'hiveTemperature', displayName: 'Hive temperature' },
         { name: 'piloTemperature', displayName: 'Pilo temperature' },
         { name: 'light', displayName: 'Light' },
         { name: 'humidity', displayName: 'Humidity' }
     );
-    repository.setDevice(
-        'all',
-        { name: 'hive0', url: '0.0.0.0', location: 'Sofia', displayName: 'Hive 0' },
-        { name: 'hive1', url: '0.0.0.1', location: 'Sofia', displayName: 'Hive 1' }
+    manager.setDevice(
+        ['hiveTemperature', 'piloTemperature', 'light', 'humidity'],
+        { name: 'hive0', endpoints: {
+            sensors: 'http://192.168.43.82/sensors',
+            lock: 'http://192.168.43.82/lock',
+            unlock: 'http://192.168.43.82/unlock',
+            update: 'http://192.168.43.82/update'
+        }, location: 'Sofia', displayName: 'Hive 0' }
+        // { name: 'hive1', url: '0.0.0.1', location: 'Sofia', displayName: 'Hive 1' }
     );
     // repository.addSensorData('hive0', 'light', 600, new Date())
     // repository.addSensorData('hive0', 'light', 10, new Date())

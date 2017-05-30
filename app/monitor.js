@@ -2,8 +2,8 @@ const request = require('request-promise');
 
 
 module.exports.HiveMonitor = class {
-    constructor({ repository, frequency = 5000, logger = (_ = {}), credentials }) {
-        this.repository = repository;
+    constructor({ manager, frequency = 5000, logger = (_ = {}), credentials }) {
+        this.manager = manager;
         this.frequency = frequency;
         this.intervalId = undefined;
         this.logger = logger;
@@ -12,7 +12,7 @@ module.exports.HiveMonitor = class {
 
     start() {
         this.stop();
-        let devices = this.repository.getAllDevices();
+        let devices = this.manager.getAllDevices();
 
         this.intervalId = setInterval(() => {
             for (let name in devices) {
@@ -29,16 +29,18 @@ module.exports.HiveMonitor = class {
 
     getHeaders() {
         // Format credentials
-        return this.credentials;
+        return {
+            'Authorization': 'Basic YWRtaW46ZXNwODI2Ng=='
+        };
     }
 
-    collectDeviceData({ url, displayName, name: deviceName }) {
+    collectDeviceData({ endpoints, displayName, name: deviceName }) {
         this.logger(`Start collecting data for ${ deviceName }`);
-        request({ headers: this.getHeaders(), method: 'GET', url })
+        request({ headers: this.getHeaders(), method: 'GET', url: endpoints.sensors })
             .then(response => {
-                let sensorsData = JSON.stringify(response);
+                let sensorsData = JSON.parse(response);
                 for (let sensorName in sensorsData) {
-                    this.repository.addSensorData(
+                    this.manager.addSensorData(
                         deviceName, sensorName,
                         sensorsData[sensorName], new Date()
                     );
