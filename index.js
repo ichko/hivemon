@@ -3,7 +3,7 @@ let { HiveMonitor } = require('./app/monitor');
 let { HiveApi } = require('./app/api');
 
 
-let port = 3001;
+let port = 80;
 let monitoringDelay = 5000;
 let apiCredentials = {
     username: 'admin',
