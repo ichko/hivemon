@@ -46,28 +46,33 @@ module.exports.HiveApi = class {
 
         // Devices
         router.get('/hive', (req, res) => {
-            res.send(repository.getAllDevices());
+            repository.getAllDevices()
+                .then(devices => res.send(devices))
+                .catch(error => fail(`Devices could not be retrieved (${ error })`));
         });
 
         router.post('/hive', (req, res) => {
-            repository.setDevice(req.body.sensorNames, req.body);
-            res.send(success);
+            repository.setDevice(req.body.sensorNames, req.body)
+                .then(() => res.send(success))
+                .catch(error => res.send(fail(`Data was not saved (${ error })`)));
         });
 
         router.get('/hive/:hiveName', (req, res) => {
-            res.send(repository.getDevice(req.params.hiveName));
+            repository.getDevice(req.params.hiveName)
+                .then(device => res.send(device))
+                .catch(error => res.send(fail(`Device ${ req.params.hiveName } could not be retrieved (${ error })`)));
         });
 
-        router.get('/hive/:hiveName/sensors', (req, res) => {
-            res.send(repository.getDevice(req.params.hiveName).sensors);
+        router.get('/hive/:hiveName/sensor/:sensorName', (req, res) => {
+            repository.getSensorFromDevice(req.params.hiveName, req.params.sensorName)
+                .then(sensor => res.send(sensor))
+                .catch(error => res.send(fail(`Data was not retrieved (${ error })`)));
         });
 
-        router.get('/hive/:hiveName/sensors/:sensorName', (req, res) => {
-            res.send(repository.getDevice(req.params.hiveName).sensors[req.params.sensorName]);
-        });
-
-        router.post('/hive/:hiveName/sensors/:sensorName', (req, res) => {
-            res.send(repository.addSensorToDevice(req.params.hiveName, req.params.sensorNames));
+        router.post('/hive/:hiveName/sensor/:sensorName', (req, res) => {
+            repository.addSensorToDevice(req.params.hiveName, req.params.sensorNames)
+                .then(() => res.send(success))
+                .catch(error => res.send(fail(`Sensor was not added (${ error })`)));
         });
 
         router.get('/hive/:hiveName/toggleDoor', (req, res) => {

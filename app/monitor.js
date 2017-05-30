@@ -12,15 +12,14 @@ module.exports.HiveMonitor = class {
 
     start() {
         this.stop();
-        let devices = this.repository.getAllDevices();
-
-        this.intervalId = setInterval(() => {
-            for (let name in devices) {
-                let device = devices[name];
-                device.name = name;
-                this.collectDeviceData(device);
-            }
-        }, this.frequency);
+        this.repository.getAllDevices()
+            .then(devices =>
+                this.intervalId = setInterval(() =>
+                    devices.forEach(device => this.collectDeviceData(device)),
+                    this.frequency
+                )
+            )
+            .catch(error => this.stop());
     }
 
     stop() {

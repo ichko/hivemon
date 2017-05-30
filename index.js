@@ -5,6 +5,7 @@ let { HiveApi } = require('./app/api');
 
 let port = 3000;
 let monitoringDelay = 5000;
+let dbAddress = 'mongodb://localhost:27017/hive';
 let apiCredentials = {
     username: 'admin',
     password: 'admin'
@@ -15,7 +16,7 @@ let espCredentials = {
 };
 
 
-new DeviceManager().init('mongodb://localhost:27017/hive').then(repository => {
+new DeviceManager().init(dbAddress).then(repository => {
     let api = new HiveApi(repository, apiCredentials);
     let monitor = new HiveMonitor({
         credentials: espCredentials,
