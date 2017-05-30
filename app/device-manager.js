@@ -11,21 +11,29 @@ module.exports.DeviceManager = class {
             devices: {}
         };
         this.sensorsProjection = { name: 1, displayName: 1, _id: 0 };
-    };
+    }
+
+    init(address = 'mongodb://localhost:27017/hive') {
+        return new Promise((resolve, reject) => {
+            mongoose.connect(address, error =>
+                error ? reject(error) : this.registerSchemas() || resolve(this));
+        });
+    }
+
     registerSchemas() {
         this.model = {
             Sensor: mongoose.model('Sensor', new mongoose.Schema({
                 name: String,
                 displayName: String
+            })),
+            Device: mongoose.model('Device', new mongoose.Schema({
+                name: String,
+                url: String,
+                location: String,
+                displayName: String,
+                sensors: Object
             }))
         };
-    }
-
-    init(address = 'mongodb://localhost:27017', dbName = 'hive') {
-        return new Promise((resolve, reject) => {
-            mongoose.connect(`${address}/${dbName}`, error =>
-                error ? reject(error) : this.registerSchemas() || resolve(this));
-        });
     }
 
     setSensor(...sensors) {
