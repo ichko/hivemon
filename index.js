@@ -5,14 +5,24 @@ let { HiveApi } = require('./app/api');
 
 let port = 3000;
 let monitoringDelay = 5000;
-let adminCredentials = {
+let apiCredentials = {
+    username: 'admin',
+    password: 'admin'
+};
+let espCredentials = {
     username: 'admin',
     password: 'admin'
 };
 
+
 new DeviceManager().init('mongodb://localhost:27017/hive').then(repository => {
-    let monitor = new HiveMonitor(repository, monitoringDelay, console.log);
-    let api = new HiveApi(repository, adminCredentials);
+    let api = new HiveApi(repository, apiCredentials);
+    let monitor = new HiveMonitor({
+        credentials: espCredentials,
+        repository,
+        frequency: monitoringDelay,
+        logger: console.log
+    });
     repository.setSensor(
         { name: 'hiveTemperature', displayName: 'Hive temperature' },
         { name: 'piloTemperature', displayName: 'Pilo temperature' },
